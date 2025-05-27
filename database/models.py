@@ -7,6 +7,7 @@ mongo = PyMongo()
 #Global Collections
 users_collection = None
 sessions_collection = None
+brain_collection = None
 
 def init_db(app: Flask):  
     """Initialize the database connection"""
@@ -39,6 +40,7 @@ def initialize_collections():
 
         users_collection = db["users"]
         sessions_collection = db["sessions"]  
+        brain_collection = db["brain"]  
 
         # Debugging print statements
         print(f"✅ Collections initialized successfully!")

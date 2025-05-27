@@ -70,7 +70,8 @@ def login():
         "message": "Login successful",
         "access_token": access_token,
         "refresh_token": session_id,
-        "user": {"username": user["username"], "email": user["email"]}
+        "user": {"username": user["username"], "email": user["email"]},
+        "assessment_flag": user.get("assessment_flag", 0)
     }
 
     return jsonify(response_data), 200
