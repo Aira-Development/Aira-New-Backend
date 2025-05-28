@@ -10,6 +10,7 @@ sessions_collection = None
 brain_collection = None
 chat_collection = None
 journal_collection = None
+sentiment_collection = None
 
 def init_db(app: Flask):  
     """Initialize the database connection"""
@@ -29,7 +30,7 @@ def get_database():
 
 def initialize_collections():
     """Ensure database is initialized after setting collections"""
-    global users_collection, chat_collection, sessions_collection, brain_collection, journal_collection
+    global users_collection, chat_collection, sessions_collection, brain_collection, journal_collection, sentiment_collection
 
     try:
         db = mongo.db  
@@ -45,6 +46,7 @@ def initialize_collections():
         brain_collection = db["brain"]  
         chat_collection = db["chat"]  
         journal_collection = db["journal"]  
+        sentiment_collection = db["sentiment"]  
 
         # Debugging print statements
         print(f"✅ Collections initialized successfully!")
