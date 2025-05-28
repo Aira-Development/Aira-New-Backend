@@ -8,6 +8,8 @@ mongo = PyMongo()
 users_collection = None
 sessions_collection = None
 brain_collection = None
+chat_collection = None
+journal_collection = None
 
 def init_db(app: Flask):  
     """Initialize the database connection"""
@@ -27,7 +29,7 @@ def get_database():
 
 def initialize_collections():
     """Ensure database is initialized after setting collections"""
-    global users_collection, chat_history_collection, feedback_collection, question_collection, sessions_collection, auth_codes_collection, brain_collection, reminder_collection, sentiment_collection, echat_history, ejournal
+    global users_collection, chat_collection, sessions_collection, brain_collection, journal_collection
 
     try:
         db = mongo.db  
@@ -41,6 +43,8 @@ def initialize_collections():
         users_collection = db["users"]
         sessions_collection = db["sessions"]  
         brain_collection = db["brain"]  
+        chat_collection = db["chat"]  
+        journal_collection = db["journal"]  
 
         # Debugging print statements
         print(f"✅ Collections initialized successfully!")
