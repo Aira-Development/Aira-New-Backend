@@ -14,12 +14,14 @@ if db_initialized:
     from routes.assessment import assessment_bp
     from routes.chat import chat_bp
     from routes.sentiment import sentiment_bp
+    from routes.feedback import feedback_bp
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(assessment_bp)
     app.register_blueprint(chat_bp)
     app.register_blueprint(sentiment_bp)
+    app.register_blueprint(feedback_bp)
 
 @app.route('/api/hello', methods=['GET'])
 def hello():    
