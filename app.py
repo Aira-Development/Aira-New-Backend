@@ -15,6 +15,7 @@ if db_initialized:
     from routes.chat import chat_bp
     from routes.sentiment import sentiment_bp
     from routes.feedback import feedback_bp
+    from routes.vision_board import visionboard_bp
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
@@ -22,6 +23,8 @@ if db_initialized:
     app.register_blueprint(chat_bp)
     app.register_blueprint(sentiment_bp)
     app.register_blueprint(feedback_bp)
+    app.register_blueprint(visionboard_bp)
+
 
 @app.route('/api/hello', methods=['GET'])
 def hello():    

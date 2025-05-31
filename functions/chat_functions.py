@@ -110,7 +110,7 @@ def create_or_update_memory_card(user_id_str):
     - Relationships, values, or coping mechanisms
     - Anything that matters deeply to the user
 
-    Write each insight as a concise statement starting with {user_gender}. Each statement should capture a key emotional or personal detail and can include related information for context. Avoid transient details unless emotionally significant.
+    Write each insight as a concise statement starting with He/She according to the user's gender. Each statement should capture a key emotional or personal detail and can include related information for context. Avoid transient details unless emotionally significant.
 
     **Output format:**
     List each memory insight on a new line. No headers, introductions, or extra text.
