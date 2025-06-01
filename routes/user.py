@@ -129,3 +129,47 @@ def send_motivation():
     return jsonify({
         "message": motivation
     })
+
+@user_bp.route('/add_streak', methods=['GET'])
+def add_streak():
+    user_id = request.args.get("user_id")
+    streak_days = request.args.get("streak_days", type=int)
+
+    if not user_id or not streak_days:
+        return jsonify({"error": "User ID and streak days are required"}), 400
+
+    # Update the user's streak in the database
+    try:
+        users_collection = get_collection("users")
+        result = users_collection.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$inc": {"streak": streak_days}}
+        )
+    except Exception as e:
+        logger.error(f"Database error while adding streak: {e}")
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+    if result.modified_count == 0:
+        return jsonify({"message": "No changes made or user not found."}), 400
+
+    logger.info(f"Streak updated for user {user_id}")
+    return jsonify({"message": "Streak updated successfully"}), 200
+
+@user_bp.route("/get_streak", methods=["GET"])
+def get_streak():
+    user_id = request.args.get("user_id")
+
+    if not user_id:
+        return jsonify({"error": "User ID is required"}), 400
+
+    try:
+        users_collection = get_collection("users")
+        user = users_collection.find_one({"_id": ObjectId(user_id)})
+    except Exception as e:
+        logger.error(f"Database error while retrieving streak: {e}")
+        return jsonify({"error": "Database error", "details": str(e)}), 500
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({"streak": user.get("streak", 0)}), 200
