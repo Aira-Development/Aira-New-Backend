@@ -26,3 +26,7 @@ afinn
 SMTPEmail
 email-to
 APScheduler
+pandas
+openpyxl
+gspread 
+oauth2client

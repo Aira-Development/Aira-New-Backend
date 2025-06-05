@@ -3,6 +3,7 @@ from datetime import datetime
 from bson.objectid import ObjectId
 from utils.user_utils import get_user_id
 from database.models import brain_collection, users_collection
+from functions.gsheet import append_to_google_sheet
 
 assessment_bp = Blueprint("assessment", __name__, url_prefix="/api/assessment")
 
@@ -101,4 +102,20 @@ def mental_health_assessment():
         {"$set": {"assessment_flag": 1}}
     )
 
+    # Call Google Sheets logger
+    append_to_google_sheet({
+        **demographics,
+        "assessment": {
+            "answers": scored_answers,
+            "score": total_score,
+            "mental_state": mental_state
+        },
+        "reflections": {
+            "questions": reflection_questions
+        }
+    })
+
     return jsonify({"status": "success", "score": total_score})
+
+
+

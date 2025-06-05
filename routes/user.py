@@ -111,7 +111,7 @@ def generate_story():
     if not user:
         return jsonify({"error": "User not found in AIRA's Brain"}), 404
     
-    print("\n user : ", user)
+    # print("\n user : ", user)
 
 
     story = generate_user_story(user)

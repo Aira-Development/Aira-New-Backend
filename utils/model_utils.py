@@ -28,7 +28,7 @@ session_cache = {}
 @lru_cache(maxsize=1)
 def get_model():
     """Returns a cached instance of the ChatGroq model"""
-    return ChatGroq(groq_api_key=GROQ_API_KEY, model_name="Llama3-8b-8192")
+    return ChatGroq(groq_api_key=GROQ_API_KEY, model_name="llama-3.3-70b-versatile")
 
 def get_chat_history_collection():
     return chat_collection
@@ -244,7 +244,7 @@ def create_chain(user_id):
         global model
         if model is None:
             logger.info("Initializing Groq LLM model")
-            model = ChatGroq(groq_api_key=GROQ_API_KEY, model_name="Llama3-8b-8192")
+            model = ChatGroq(groq_api_key=GROQ_API_KEY, model_name="llama-3.1-8b-instant")
         return model
 
     def get_embedding_model():

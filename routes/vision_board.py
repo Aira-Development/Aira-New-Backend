@@ -72,7 +72,7 @@ def get_goals():
     # Format the goals for frontend consumption
     formatted_goals = [
         {
-            "id": goal.get("response_id"),
+            "id": goal.get("goal_id"),
             "text": goal.get("data"),
             "timestamp": goal.get("timestamp").isoformat() if goal.get("timestamp") else None
         }
