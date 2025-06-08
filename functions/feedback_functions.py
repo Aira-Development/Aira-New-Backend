@@ -2,7 +2,7 @@ import logging
 from flask import jsonify
 from bson import ObjectId
 from datetime import datetime
-from database.models import journal_collection
+from database.models import chat_collection
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -78,11 +78,11 @@ def update_user_feedback(feedback_collection, user_id, user_feedback):
         return False, (jsonify({"error": "Database error", "details": str(e)}), 500)
     
 def get_remembered_messages(user_id, response_id):
-    """Retrieve user message and AI response from journal-based chat data."""
-    
-    journal_data = journal_collection.find_one({
+    """Retrieve user message and AI response from chat-based message data."""
+
+    chat_data = chat_collection.find_one({
         "user_id": str(user_id),
-        "journals.messages": {
+        "messages": {
             "$elemMatch": {
                 "role": "AI",
                 "response_id": {"$regex": response_id}
@@ -90,26 +90,26 @@ def get_remembered_messages(user_id, response_id):
         }
     })
 
-    if not journal_data:
-        return None, None, (jsonify({"error": "Journal data not found"}), 404)
+    if not chat_data:
+        return None, None, (jsonify({"error": "Chat data not found"}), 404)
 
-    for journal in journal_data.get("journals", []):
-        messages = journal.get("messages", [])
-        for i in range(len(messages)):
-            msg = messages[i]
-            if msg["role"] == "AI" and response_id in msg.get("response_id", ""):
-                aira_response = msg.get("content", "")
-                # Check the previous message for user input
-                if i > 0 and messages[i - 1]["role"] == "User":
-                    user_message = messages[i - 1].get("content", "")
-                else:
-                    user_message = None
-                if user_message and aira_response:
-                    return user_message, aira_response, None
-                else:
-                    return None, None, (jsonify({"error": "Incomplete journal message pair"}), 400)
+    messages = chat_data.get("messages", [])
+    for i in range(len(messages)):
+        msg = messages[i]
+        if msg["role"] == "AI" and response_id in msg.get("response_id", ""):
+            aira_response = msg.get("content", "")
+            # Check the previous message for user input
+            if i > 0 and messages[i - 1]["role"] == "User":
+                user_message = messages[i - 1].get("content", "")
+            else:
+                user_message = None
+            if user_message and aira_response:
+                return user_message, aira_response, None
+            else:
+                return None, None, (jsonify({"error": "Incomplete message pair"}), 400)
 
     return None, None, (jsonify({"error": "Response ID not found"}), 404)
+
 
 def insert_daily_feedback(collection, user_id, rating, comment):
     """Insert or update daily feedback into the feedback collection."""
