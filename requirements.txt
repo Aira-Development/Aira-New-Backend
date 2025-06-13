@@ -30,3 +30,4 @@ pandas
 openpyxl
 gspread 
 oauth2client
+sentence-transformers
