@@ -60,12 +60,13 @@ def add_reminder():
         ist_dt = to_ist(scheduled_time)
         if not ist_dt:
             return jsonify({"error": "Invalid scheduled_time format. Use YYYY-MM-DD HH:MM:SS"}), 400
-
+        # print(f"IST DateTime: {ist_dt}")
+        # print(f"Scheduled Time: {scheduled_time}")
         now_ist = datetime.now(ist_tz)
         new_reminder = {
             "_id": ObjectId(),
             "generated_reminder": title,
-            "scheduled_time": format_ist_string(ist_dt),
+            "scheduled_time": scheduled_time,
             "status": "pending",
             "created_at": format_ist_string(now_ist)
         }
