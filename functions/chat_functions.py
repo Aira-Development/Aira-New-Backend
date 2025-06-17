@@ -5,6 +5,7 @@ import uuid
 from bson.objectid import ObjectId
 from utils.model_utils import create_chain,get_model
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from bson.errors import InvalidId
 
 def is_first_user_message_today(messages):
     today = datetime.utcnow().date()
@@ -34,18 +35,29 @@ def generate_ai_response(user_input: str, user_id: str) -> dict:
         {"input": user_input, "user_id": user_id},
         config={"configurable": {"session_id": user_id}}
     )
+    
     response_time = round(time.time() - start_time, 2)
     response_id = str(uuid.uuid4())
     current_time = get_current_time()
+    
     ai_message = {
         "role": "AI",
         "content": ai_response,
         "created_at": current_time
     }
-    chat_collection.update_one(
-        {"user_id": ObjectId(user_id)},
-        {"$push": {"messages": ai_message}}
-    )
+
+    # ✅ Push message to chat_collection with proper user_id handling
+    try:
+        chat_collection.update_one(
+            {"user_id": ObjectId(user_id)},
+            {"$push": {"messages": ai_message}}
+        )
+    except (InvalidId, TypeError):
+        chat_collection.update_one(
+            {"user_id": user_id},
+            {"$push": {"messages": ai_message}}
+        )
+
     return {
         "role": "AI",
         "response_id": response_id,

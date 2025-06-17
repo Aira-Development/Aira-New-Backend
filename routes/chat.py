@@ -100,15 +100,14 @@ def chat():
 
 @chat_bp.route("/whatsapp", methods=["POST"])
 def whatsapp_chat():
-    from_number = request.form.get("From")  # WhatsApp user number
-    user_input = request.form.get("Body")   # Message sent
+    from_number = request.form.get("From")
+    user_input = request.form.get("Body")
 
     if not user_input:
         return "No message", 200
 
-    user_id_obj = from_number  # You can use phone number as user ID
+    user_id_obj = from_number
 
-    # Check if user exists
     user_doc = chat_collection.find_one({"user_id": user_id_obj})
     if not user_doc:
         user_doc = {
@@ -135,10 +134,10 @@ def whatsapp_chat():
     }
     messages.append(user_message)
 
-    # Generate response
+    # Generate AI response
     response_data = generate_ai_response(user_input, user_id_obj)
     ai_response = response_data.get("message", "").strip()
-    message_chunks = [part.strip() for part in ai_response.split("|||")]
+    message_chunks = [part.strip() for part in ai_response.split("|||") if part.strip()]
 
     ai_message = {
         "role": "AI",
@@ -151,9 +150,11 @@ def whatsapp_chat():
 
     chat_collection.update_one({"user_id": user_id_obj}, {"$set": {"messages": messages}})
 
-    # Reply back to WhatsApp
+    # Send each chunk as a separate WhatsApp message
     twilio_resp = MessagingResponse()
-    twilio_resp.message(ai_response)
+    for chunk in message_chunks:
+        twilio_resp.message(chunk)
+
     return str(twilio_resp), 200
 
 
