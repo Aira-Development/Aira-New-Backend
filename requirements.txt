@@ -31,3 +31,4 @@ openpyxl
 gspread 
 oauth2client
 sentence-transformers
+twilio
