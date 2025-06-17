@@ -103,6 +103,13 @@ def whatsapp_chat():
     from_number = request.form.get("From")
     user_input = request.form.get("Body")
 
+    # After receiving user's message
+    if user_input.lower().startswith("join"):
+        # Optionally respond with a welcome message
+        welcome_message = "Hi! I’m AIRA 🌱 Your AI mental health assistant. Feel free to share anything with me."
+        twilio_resp.message(welcome_message)
+        return str(twilio_resp), 200
+    
     if not user_input:
         return "No message", 200
 
