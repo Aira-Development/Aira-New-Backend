@@ -16,6 +16,7 @@ from flask import request
 import jwt
 from datetime import datetime
 from functools import lru_cache
+from bson.errors import InvalidId
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,13 @@ def clean_session_cache():
 def create_chain(user_id):
     """Creates a conversation chain dynamically with user-specific prompt and RAG retrieval."""
     brain_collection = aira_brain()
-    user_doc = brain_collection.find_one({"user_id": ObjectId(user_id)})
+    try:
+        # Only try converting if it's a real ObjectId
+        user_doc = brain_collection.find_one({"user_id": ObjectId(user_id)})
+    except (InvalidId, TypeError):
+        # If it's a WhatsApp number or any other string ID
+        user_doc = brain_collection.find_one({"user_id": user_id})
+
     # print(f"User doc: {user_doc}")
     # Default fallback values
     name = "User"
