@@ -12,6 +12,8 @@ import uuid
 from datetime import datetime 
 import pytz
 from bson.objectid import ObjectId
+from twilio.twiml.messaging_response import MessagingResponse
+
 
 chat_bp = Blueprint("chat", __name__, url_prefix="/api/chat")
 
@@ -95,6 +97,65 @@ def chat():
         "created_at": current_time,
         "message_chunks": message_chunks
     }), 200
+
+@chat_bp.route("/whatsapp", methods=["POST"])
+def whatsapp_chat():
+    from_number = request.form.get("From")  # WhatsApp user number
+    user_input = request.form.get("Body")   # Message sent
+
+    if not user_input:
+        return "No message", 200
+
+    user_id_obj = from_number  # You can use phone number as user ID
+
+    # Check if user exists
+    user_doc = chat_collection.find_one({"user_id": user_id_obj})
+    if not user_doc:
+        user_doc = {
+            "user_id": user_id_obj,
+            "messages": [],
+            "typing_flag": 0,
+            "journal_start_flag": 0,
+            "journal_end_flag": 0
+        }
+        chat_collection.insert_one(user_doc)
+
+    messages = user_doc["messages"]
+    current_time = get_current_time()
+
+    if user_doc.get("journal_start_flag", 0) == 0 and is_first_user_message_today(messages):
+        check_and_set_journal_start(user_doc, user_id_obj)
+
+    key_data_flag = 1 if is_important_message(user_input) else 0
+    user_message = {
+        "role": "User",
+        "content": user_input,
+        "created_at": current_time,
+        "key_data_flag": key_data_flag
+    }
+    messages.append(user_message)
+
+    # Generate response
+    response_data = generate_ai_response(user_input, user_id_obj)
+    ai_response = response_data.get("message", "").strip()
+    message_chunks = [part.strip() for part in ai_response.split("|||")]
+
+    ai_message = {
+        "role": "AI",
+        "response_id": response_data.get("response_id", "").strip(),
+        "message_chunks": message_chunks,
+        "content": ai_response,
+        "created_at": current_time
+    }
+    messages.append(ai_message)
+
+    chat_collection.update_one({"user_id": user_id_obj}, {"$set": {"messages": messages}})
+
+    # Reply back to WhatsApp
+    twilio_resp = MessagingResponse()
+    twilio_resp.message(ai_response)
+    return str(twilio_resp), 200
+
 
 @chat_bp.route("/set_typing_flag", methods=["POST"])
 def set_typing_flag():
