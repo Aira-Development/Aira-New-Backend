@@ -1,5 +1,6 @@
 import time
 import logging
+from gspread import api_key
 from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
@@ -29,7 +30,12 @@ session_cache = {}
 @lru_cache(maxsize=1)
 def get_model():
     """Returns a cached instance of the ChatGroq model"""
-    return ChatGroq(groq_api_key=GROQ_API_KEY, model_name="llama-3.3-70b-versatile")
+    api_key = GROQ_API_KEY
+    print(f"GROQ_API_KEY loaded: {GROQ_API_KEY[:10]}..." if GROQ_API_KEY else "GROQ_API_KEY is None")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY not found in environment variables.")
+    return ChatGroq(groq_api_key=api_key, model_name="llama3-70b-8192")  # Corrected model name
+
 
 def get_chat_history_collection():
     return chat_collection
@@ -247,11 +253,12 @@ def create_chain(user_id):
 
     output_parser = StrOutputParser()
 
-    def get_model():
+    def get_model_inside():
         global model
         if model is None:
             logger.info("Initializing Groq LLM model")
-            model = ChatGroq(groq_api_key=GROQ_API_KEY, model_name="llama-3.1-8b-instant")
+            api_key = GROQ_API_KEY
+            model = ChatGroq(groq_api_key=api_key, model_name="llama3-70b-8192")
         return model
 
     def get_embedding_model():
@@ -284,7 +291,7 @@ def create_chain(user_id):
             "chat_history": lambda x: x["chat_history"],
         })
         | prompt
-        | get_model()
+        | get_model_inside()
         | output_parser,
         get_session_history,
         input_messages_key="input",

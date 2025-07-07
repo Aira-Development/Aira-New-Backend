@@ -44,10 +44,11 @@ def mental_health_assessment():
 
     # Scoring map
     option_scores = {
-        "always": 3,
-        "most of the time": 2,
+        "always": 4,
+        "most of the time": 3,
         "sometimes": 1,
-        "never": 0
+        "never": 0,
+        "neutral": 2
     }
 
     try:
