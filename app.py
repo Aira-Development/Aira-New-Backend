@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import time
 import logging
 from database.models import init_db
+from scheduler import start_scheduler
 
 app = Flask(__name__)
 
@@ -18,6 +19,7 @@ if db_initialized:
     from routes.vision_board import visionboard_bp
     from routes.user import user_bp
     from routes.reminders import reminder_bp
+    from routes.speech import speech_bp
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
@@ -28,6 +30,7 @@ if db_initialized:
     app.register_blueprint(visionboard_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(reminder_bp)
+    app.register_blueprint(speech_bp)
 
 
 @app.route('/api/hello', methods=['GET'])
@@ -37,5 +40,6 @@ def hello():
 
 if __name__ == "__main__":
     app.start_time = time.time()
+    start_scheduler()
     logging.info("Starting AIRA Therapist application")
-    app.run(debug=True)
+    app.run(  host='0.0.0.0', port=5000,debug=True) 

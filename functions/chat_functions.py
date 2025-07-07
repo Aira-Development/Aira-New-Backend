@@ -179,6 +179,7 @@ def create_or_update_memory_card(user_id_str):
 
 def export_journal(user_id):
     today_str = datetime.utcnow().date().isoformat()
+    print('📅 Exporting journal for user:', user_id, 'for date:', today_str)
 
     user_doc = chat_collection.find_one({"user_id": user_id})
     if not user_doc or "messages" not in user_doc:
@@ -188,8 +189,9 @@ def export_journal(user_id):
     today_messages = []
     for msg in user_doc["messages"]:
         msg_date = datetime.fromisoformat(msg["created_at"]).date().isoformat()
-        if msg_date == today_str:
-            today_messages.append(msg)  # Store full message object
+        print('📅 Checking message date:', msg_date)
+        today_messages.append(msg)  # Store full message object
+        print('📹Exporting journal for user:', user_id, 'for date:', today_str)
 
     if not today_messages:
         return  # No messages for today

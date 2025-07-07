@@ -14,8 +14,9 @@ def add_custom_goal():
     data = request.get_json()
     user_id = data.get("user_id")
     goal_text = data.get("goal")
+    value=data.get("value")
 
-    if not user_id or not goal_text:
+    if not user_id or not goal_text or not value:
         return jsonify({"error": "Missing required fields"}), 400
 
     brain_collection = get_collection("brain")
@@ -41,7 +42,8 @@ def add_custom_goal():
     new_goal = {
         "goal_id": goal_id,
         "timestamp": datetime.utcnow(),
-        "data": encrypted_goal
+        "data": encrypted_goal,
+        "value": value  
     }
 
     brain_collection.update_one(
@@ -74,7 +76,8 @@ def get_goals():
         {
             "id": goal.get("goal_id"),
             "text": goal.get("data"),
-            "timestamp": goal.get("timestamp").isoformat() if goal.get("timestamp") else None
+            "timestamp": goal.get("timestamp").isoformat() if goal.get("timestamp") else None,
+            "value": goal.get("value")  # Include the value field
         }
         for goal in goals
     ]

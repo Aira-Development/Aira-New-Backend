@@ -13,7 +13,7 @@ from datetime import datetime
 import pytz
 from bson.objectid import ObjectId
 from twilio.twiml.messaging_response import MessagingResponse
-
+from config import SYSTEM_SECRET
 
 chat_bp = Blueprint("chat", __name__, url_prefix="/api/chat")
 
@@ -185,6 +185,11 @@ def check_typing_flag():
         return jsonify({"error": "Missing or invalid token"}), 401
 
     user_id_obj = get_user_id(auth_header)
+    chat_collection.update_one(
+        {"user_id": user_id_obj},
+        {"$set": {"typing_flag": 1}}
+    )
+    
     user_doc = chat_collection.find_one({"user_id": user_id_obj})
 
     if not user_doc or user_doc.get("typing_flag") != 1:
@@ -233,6 +238,27 @@ def check_typing_flag():
 
 @chat_bp.route("/end_journal", methods=["POST"])
 def end_journal():
+    system_secret = request.headers.get("System-Secret")
+    user_id = request.headers.get("User-ID")
+
+    # If scheduler is calling this
+    if system_secret == SYSTEM_SECRET and user_id:
+        user_doc = chat_collection.find_one({"user_id": user_id})
+        if not user_doc:
+            return jsonify({"error": "User not found"}), 404
+
+        chat_collection.update_one(
+            {"user_id": user_id},
+            {"$set": {"journal_end_flag": 1}}
+        )
+
+        if user_doc.get("journal_start_flag") == 1:
+            print(f"📅 Ending journal for user {user_id} by scheduler...")
+            export_journal(user_id)
+
+        return jsonify({"message": "Journal ended by scheduler."}), 200
+
+    # If API is called by frontend, check token
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         return jsonify({"error": "Missing or invalid token"}), 401
@@ -251,7 +277,8 @@ def end_journal():
     if user_doc.get("journal_start_flag") == 1:
         export_journal(user_id)
 
-    return jsonify({"message": "Journal end flag set and export started (if applicable)"}), 200
+    return jsonify({"message": "Journal ended successfully."}), 200
+
 
 @chat_bp.route('/get_journals', methods=['GET'])
 def get_journals():
@@ -433,3 +460,20 @@ def welcome_back():
         "created_at": current_time,
         "message_chunks": message_chunks
     }), 200
+
+@chat_bp.route("/get_messages", methods=["GET"])
+def get_messages(): 
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return jsonify({"error": "Missing or invalid token"}), 401
+
+    user_id_str = get_user_id(auth_header)
+    if not user_id_str:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user_doc = chat_collection.find_one({"user_id": user_id_str})
+    if not user_doc:
+        return jsonify({"messages": []})
+
+    messages = user_doc.get("messages", [])
+    return jsonify({"messages": messages}), 200
