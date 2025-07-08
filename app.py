@@ -3,8 +3,10 @@ import time
 import logging
 from database.models import init_db
 from scheduler import start_scheduler
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
 # Initialize MongoDB and collections - store the result
 db_initialized = init_db(app)
